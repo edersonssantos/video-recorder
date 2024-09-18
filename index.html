@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Gravar Vídeo</title>
+</head>
+<body>
+  <video id="video" width="320" height="240" autoplay></video>
+  <button id="start">Iniciar Gravação</button>
+  <button id="stop">Parar Gravação</button>
+  <script>
+    let mediaRecorder;
+    const video = document.getElementById('video');
+    const startButton = document.getElementById('start');
+    const stopButton = document.getElementById('stop');
+
+    navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
+      video.srcObject = stream;
+      mediaRecorder = new MediaRecorder(stream);
+
+      startButton.addEventListener('click', () => {
+        mediaRecorder.start();
+      });
+
+      stopButton.addEventListener('click', () => {
+        mediaRecorder.stop();
+        // Aqui você pode adicionar código para enviar o vídeo para um servidor ou serviço de armazenamento.
+      });
+    });
+  </script>
+</body>
+</html>

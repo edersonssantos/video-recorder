@@ -2,29 +2,79 @@
 <html>
 <head>
   <title>Gravar Vídeo</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+    }
+    #video {
+      width: 100vw;
+      height: 100vh;
+      object-fit: cover;
+    }
+    .controls {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 10px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+    }
+  </style>
 </head>
 <body>
-  <video id="video" width="320" height="240" autoplay></video>
-  <button id="start">Iniciar Gravação</button>
-  <button id="stop">Parar Gravação</button>
+  <video id="video" autoplay></video>
+  <div class="controls">
+    <button id="start">Iniciar Gravação</button>
+    <button id="stop">Parar Gravação</button>
+  </div>
   <script>
     let mediaRecorder;
     const video = document.getElementById('video');
     const startButton = document.getElementById('start');
     const stopButton = document.getElementById('stop');
+    const recordedChunks = [];
 
-    navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
+    // Acesso à câmera e configuração da gravação
+    navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(stream => {
       video.srcObject = stream;
       mediaRecorder = new MediaRecorder(stream);
 
+      // Evento de gravação
+      mediaRecorder.ondataavailable = function(event) {
+        if (event.data.size > 0) {
+          recordedChunks.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = function() {
+        const blob = new Blob(recordedChunks, { type: 'video/webm' });
+        const url = URL.createObjectURL(blob);
+
+        // Aqui você pode adicionar código para enviar o vídeo para um servidor ou serviço de armazenamento
+        console.log('Vídeo gravado:', url);
+      };
+
       startButton.addEventListener('click', () => {
         mediaRecorder.start();
+        startButton.disabled = true;
+        stopButton.disabled = false;
       });
 
       stopButton.addEventListener('click', () => {
         mediaRecorder.stop();
-        // Aqui você pode adicionar código para enviar o vídeo para um servidor ou serviço de armazenamento.
+        startButton.disabled = false;
+        stopButton.disabled = true;
       });
+
+      // Inicializa os botões
+      stopButton.disabled = true;
+    }).catch(error => {
+      console.error('Erro ao acessar a câmera:', error);
     });
   </script>
 </body>

@@ -6,6 +6,7 @@
     body {
       margin: 0;
       overflow: hidden;
+      font-family: Arial, sans-serif;
     }
     #video {
       width: 100vw;
@@ -24,6 +25,48 @@
       padding: 10px 20px;
       font-size: 16px;
     }
+    .indicator {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background-color: red;
+      display: none;
+      animation: pulse 1s infinite;
+    }
+    @keyframes pulse {
+      0% {
+        transform: scale(1);
+        opacity: 1;
+      }
+      50% {
+        transform: scale(1.2);
+        opacity: 0.7;
+      }
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+    #replay {
+      display: none;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.7);
+      padding: 20px;
+      border-radius: 10px;
+    }
+    #replay video {
+      max-width: 100%;
+      height: auto;
+    }
+    #replay button {
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
@@ -32,11 +75,20 @@
     <button id="start">Iniciar Gravação</button>
     <button id="stop">Parar Gravação</button>
   </div>
+  <div class="indicator" id="indicator"></div>
+  <div id="replay">
+    <video id="replayVideo" controls></video>
+    <button id="closeReplay">Fechar Replay</button>
+  </div>
   <script>
     let mediaRecorder;
     const video = document.getElementById('video');
     const startButton = document.getElementById('start');
     const stopButton = document.getElementById('stop');
+    const indicator = document.getElementById('indicator');
+    const replay = document.getElementById('replay');
+    const replayVideo = document.getElementById('replayVideo');
+    const closeReplay = document.getElementById('closeReplay');
     const recordedChunks = [];
 
     // Acesso à câmera e configuração da gravação
@@ -54,21 +106,29 @@
       mediaRecorder.onstop = function() {
         const blob = new Blob(recordedChunks, { type: 'video/webm' });
         const url = URL.createObjectURL(blob);
+        
+        replayVideo.src = url;
+        replay.style.display = 'block'; // Mostrar o replay
 
-        // Aqui você pode adicionar código para enviar o vídeo para um servidor ou serviço de armazenamento
-        console.log('Vídeo gravado:', url);
+        recordedChunks.length = 0; // Limpar os chunks gravados
       };
 
       startButton.addEventListener('click', () => {
         mediaRecorder.start();
+        indicator.style.display = 'block'; // Mostrar o indicador
         startButton.disabled = true;
         stopButton.disabled = false;
       });
 
       stopButton.addEventListener('click', () => {
         mediaRecorder.stop();
+        indicator.style.display = 'none'; // Ocultar o indicador
         startButton.disabled = false;
         stopButton.disabled = true;
+      });
+
+      closeReplay.addEventListener('click', () => {
+        replay.style.display = 'none'; // Fechar o replay
       });
 
       // Inicializa os botões
